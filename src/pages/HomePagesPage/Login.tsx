@@ -98,17 +98,17 @@ const LoginTechnician = () => {
     return errors;
   }
 
-  useEffect(() => {
-    // if we don't have a token, go back to home
-    if (token) { 
-      if (userInfo?.url_permission === 'technician_url')
-      window.location.href = `${userInfo.url}` 
-      return;
-    }  
+  // useEffect(() => {
+  //   // if we don't have a token, go back to home
+  //   if (token) { 
+  //     if (userInfo?.url_permission === 'technician_url')
+  //     window.location.href = `${userInfo.url}` 
+  //     return;
+  //   }  
 
-    // Done checking
-    setIsChecking(false);
-  }, [token, login]);
+  //   // Done checking
+  //   setIsChecking(false);
+  // }, [token, login]);
 
     // 👇 Prevent rendering layout until checks are done
   if (isChecking) {
@@ -157,16 +157,12 @@ const LoginTechnician = () => {
             variants={itemVariants}
             className="flex justify-center mb-6 sm:mb-8"
           >
-            <img 
-              src="/beeSeeGold.png" 
-              alt="BeeSee Logo" 
-              className="h-20 sm:h-24 w-auto"
-            />
+            <h1 className='text-gray-700'>INVENTORY SYSTEM</h1>
           </motion.div> 
 
         <motion.h2
           variants={itemVariants}
-          className="text-[var(--beesee-gold)] mb-3 sm:mb-6 text-center text-5xl sm:text-5xl"
+          className="text-gray-700 mb-3 sm:mb-6 text-center text-5xl sm:text-4xl"
         >
           Login Your Account
         </motion.h2>
@@ -218,18 +214,20 @@ const LoginTechnician = () => {
             <motion.p 
               variants={itemVariants}
               onClick={() => navigate("/forget-password")}
-              className="text-blue-500 hover:underline cursor-pointer text-sm sm:text-base">
+              className="text-gray-500 hover:underline cursor-pointer text-sm sm:text-base">
               Forget Password
             </motion.p>
 
-            <motion.button
-              variants={itemVariants}
-              className="beesee-button w-full py-3 text-sm sm:text-base"
-              type="submit"
-              disabled={isPending}
-            >
-              Sign in
-            </motion.button>
+            <div className='flex items-center justify-center'>
+              <motion.button
+                variants={itemVariants}
+                className="bg-gray-700 hover:bg-gray-800 text-white text-center px-20 rounded-md py-3 text-sm sm:text-base"
+                type="submit"
+                disabled={isPending}
+              >
+                Sign in
+              </motion.button>
+            </div>
           </motion.form>
         </motion.div>
       </div>

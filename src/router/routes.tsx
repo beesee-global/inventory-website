@@ -8,7 +8,11 @@ const HomePageLayout = lazy(() => import ("../../src/layout/HomePageLayout"))
 const Login = lazy(() => import('../pages/HomePagesPage/Login'));
 const Register = lazy(() => import("../pages/HomePagesPage/Register"));
 const ForgetPassword = lazy(() => import ("../pages/HomePagesPage/ForgetPasswordPages"));  
-   
+
+/* MainLayout */
+const MainLayout = lazy(() => import("../../src/layout/MainLayout"));
+import Categories from '../pages/MainLayout/Categories/Categories';
+
 const routes = [
     {
         path: '/',
@@ -32,11 +36,37 @@ const routes = [
                 element: <ForgetPassword />
             }
         ]
-    }, 
-    /* Not found routes */ 
+    },
+    {
+        path: '/main',
+        element: <MainLayout />,
+        layout: 'blank',
+        children: [
+            {
+                index: true,
+                element: <Navigate to="categories" replace />,
+            },
+            {
+                path: 'categories',
+                element: <Categories />
+            }
+        ]
+    },
+    {
+        path: '/beesee/ecommerce',
+        element: <MainLayout />,
+        layout: 'blank',
+        children: [
+            {
+                path: 'category',
+                element: <Categories />,
+            },
+        ],
+    },
+    /* Not found routes */
     {
         path: '*', // Catch-all route
-        element: <Navigate to="/home" replace />, // CHANGED: Redirect to home instead of 404
+        element: <Navigate to="/" replace />, // Redirect to root instead of a missing route
         layout: 'blank', 
     },  
 ];

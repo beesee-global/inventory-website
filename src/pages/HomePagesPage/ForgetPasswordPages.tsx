@@ -319,7 +319,7 @@ const ForgetPasswordPages = () => {
                 onChange={(e => handleChange(e.target.value, index))}
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 className="w-12 h-12 text-center border border-gray-300 rounded-md 
-                focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500 
+                focus:border-gray-500 focus:ring-2 focus:ring-gray-500 
                 outline-none transition text-black"
               />
             ))}
@@ -335,7 +335,7 @@ const ForgetPasswordPages = () => {
           <motion.button 
             variants={itemVariants}
             onClick={handleVerify} 
-            className="w-full text-white mt-5 mb-5 py-3 px-4 rounded-md font-semibold beesee-button  text-sm sm:text-base"
+            className="w-full text-white mt-5 mb-5 py-3 px-4 rounded-md font-semibold text-sm sm:text-base"
           >
             Verify
           </motion.button>
@@ -434,7 +434,7 @@ const ForgetPasswordPages = () => {
                 onClick={handleSubmitPassword}
                 className={`w-full py-3 px-4 rounded-md font-semibold text-white 
                   ${ loading 
-                    ? "bg-yellow-300 cursor-not-allowed" 
+                    ? "bg-gray-300 cursor-not-allowed" 
                     : "beesee-button w-full py-3 text-sm sm:text-base"}`}
               >
                 Save Password
@@ -497,8 +497,8 @@ const ForgetPasswordPages = () => {
               variants={itemVariants}
               className={`mt-10 w-full py-3 px-10 text-white font-semibold rounded-md transition
                 ${ loading 
-                  ? "bg-yellow-300 cursor-not-allowed"
-                  : "beesee-button w-full py-3 text-sm sm:text-base"
+                  ? "bg--300 cursor-not-allowed"
+                  : "bg-gray-700 hover:bg-gray-800 text-white text-center px-20 rounded-md py-3 text-sm sm:text-base"
                 }`}
             >
               Verify
