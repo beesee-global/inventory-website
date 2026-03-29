@@ -205,6 +205,8 @@ export default function TableDefault({
       : <ArrowDown size={14} style={{ opacity: 1 }} />;
   };
 
+  console.log('Rendering TableDefault with props:', { rows, columns, selectedRowId, isLoading }); 
+
   if (isLoading) {
     return (
       <div className="w-full" style={{ background: COLORS.background }}>
@@ -315,7 +317,7 @@ export default function TableDefault({
                                 position: 'relative'
                               }}
                             >
-                              <span className="text-sm">{displayValue}</span>
+                              <span className="text-sm text-black">{displayValue}</span>
                             </div>
                           );
                         })}

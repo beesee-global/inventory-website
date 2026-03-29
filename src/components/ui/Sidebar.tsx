@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import React, { useEffect, useState, type ReactNode } from 'react';
-import { ChevronDown, ChevronLeft, User2, LayoutDashboard, Settings, Wrench, MoreVertical } from 'lucide-react';
+import { Box, ChevronDown, ChevronLeft, LayoutDashboard, Settings, Truck, MoreVertical } from 'lucide-react';
 import { userAuth } from '../../hooks/userAuth';
 
 interface ChildItem {
@@ -57,13 +57,13 @@ const Sidebar: React.FC<SidebarProps> = ({ setShowSidebar }) => {
         {
             id: 'inventory',
             name: 'Inventory',
-            icon: <User2 size={20} />,
+            icon: <Box size={20} />,
             children: [
                 { id: 'category', name: 'Category', path: '/main/category' },
                 { id: 'product', name: 'Product', path: '/main/product' },
             ],
         },
-        { id: 'supplier', name: 'Supplier', path: '/main/supplier', icon: <Wrench size={20} /> },
+        { id: 'supplier', name: 'Supplier', path: '/main/supplier', icon: <Truck size={20} /> },
         {
             id: 'settings',
             name: 'Settings',
