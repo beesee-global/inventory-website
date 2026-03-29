@@ -297,6 +297,15 @@ export default function TableDefault({
                       > 
                         {/* Dynamic Columns */}
                         {safeColumns.map((column) => {
+                          const rawValue = row[column.id];
+                          const displayValue = column.id === 'created_at'
+                            ? row.created_at ? formatDate(row.created_at) : '-'
+                            : rawValue === null || rawValue === undefined
+                              ? '-'
+                              : typeof rawValue === 'object'
+                                ? JSON.stringify(rawValue)
+                                : String(rawValue);
+
                           return (
                             <div 
                               key={column.id}
@@ -306,13 +315,7 @@ export default function TableDefault({
                                 position: 'relative'
                               }}
                             >
-                              {column.id === 'created_at' ? (
-                                <span className={`${TYPOGRAPHY.dateSize} ${TYPOGRAPHY.dateWeight}`}>
-                                  {formatDate(row.created_at)}
-                                </span>
-                              ) : (
-                                <span className="text-sm">{row[column.id]}</span>
-                              )}
+                              <span className="text-sm">{displayValue}</span>
                             </div>
                           );
                         })}

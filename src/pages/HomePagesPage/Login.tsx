@@ -3,7 +3,7 @@ import CustomTextField from '../../components/Fields/CustomTextField';
 import { motion } from 'framer-motion';
 import { Lock, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Snackbar from '../../components/feedback/SnackbarTechnician';
+import Snackbar from '../../components/feedback/SnackbarMain';
 import { useMutation } from '@tanstack/react-query';
 import { loggedInUser } from '../../services/Technician/userServices';
 import { AlertColor } from '@mui/material/Alert';
@@ -157,7 +157,7 @@ const LoginTechnician = () => {
             variants={itemVariants}
             className="flex justify-center mb-6 sm:mb-8"
           >
-            <h1 className='text-gray-700'>INVENTORY SYSTEM</h1>
+            <h1 className='text-gray-700'>PRO - YOUNG</h1>
           </motion.div> 
 
         <motion.h2

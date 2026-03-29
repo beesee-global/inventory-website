@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import React, { useState, useEffect, type ReactNode } from 'react';
-import { ChevronDown, Logs, ChevronLeft, Menu, User2, LayoutDashboard, MessageCircleQuestionMark, Settings, Wrench, Briefcase, MailQuestionMarkIcon, X } from 'lucide-react';
+import React, { useEffect, useState, type ReactNode } from 'react';
+import { ChevronDown, ChevronLeft, User2, LayoutDashboard, Settings, Wrench, MoreVertical } from 'lucide-react';
 import { userAuth } from '../../hooks/userAuth';
 
 interface ChildItem {
@@ -15,7 +15,6 @@ interface MenuItem {
     name: string;
     path?: string;
     icon?: ReactNode;
-    isUnderLineTop?: boolean;
     children?: ChildItem[];
 }
 
@@ -23,38 +22,54 @@ interface SidebarProps {
     setShowSidebar?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const SidebarTechnician: React.FC<SidebarProps> = ({ setShowSidebar }) => {
+const Sidebar: React.FC<SidebarProps> = ({ setShowSidebar }) => {
     const location = useLocation();
-    const { userInfo, isCollapsed, setIsCollapsed, setUserNav } = userAuth();
-    const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+    const { userInfo, isCollapsed, setIsCollapsed, setUserNav, logout } = userAuth();
     const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
+    const [showLogoutButton, setShowLogoutButton] = useState(false);
+
+    const dummyUserInfo = {
+        name: 'John Doe',
+        image_url: 'https://via.placeholder.com/150',
+        position: 'Manager',
+    };
+
+    const dummyTheme = {
+        backgroundColor: '#f0f0f0',
+        textColor: '#333',
+        hoverColor: '#ddd',
+        activeColor: '#bbb',
+        icon: '#333',
+        image_url: 'https://via.placeholder.com/150',
+    };
+
+    const currentUser = {
+        name: userInfo?.full_name || dummyUserInfo.name,
+        image_url:
+            typeof userInfo?.image === 'string' && userInfo.image
+                ? userInfo.image
+                : dummyUserInfo.image_url,
+        position: userInfo?.role || dummyUserInfo.position,
+    };
 
     const sidebarLayout: MenuItem[] = [
-        { id: 'dashboard', name: 'Dashboard', path: '/beesee/dashboard', icon: <LayoutDashboard size={20} /> },
-        { id: 'job-order', name: 'Job Order', path: '/beesee/job-order', icon: <Wrench size={20} /> },
+        { id: 'dashboard', name: 'Dashboard', path: '/main/dashboard', icon: <LayoutDashboard size={20} /> },
         {
-            id: 'users',
-            name: 'Users',
+            id: 'inventory',
+            name: 'Inventory',
             icon: <User2 size={20} />,
             children: [
-                { id: 'list_user', name: 'List User', path: '/beesee/users' },
-                { id: 'position', name: 'Position', path: '/beesee/position' },
+                { id: 'category', name: 'Category', path: '/main/category' },
+                { id: 'product', name: 'Product', path: '/main/product' },
             ],
         },
+        { id: 'supplier', name: 'Supplier', path: '/main/supplier', icon: <Wrench size={20} /> },
         {
             id: 'settings',
             name: 'Settings',
             icon: <Settings size={20} />,
-            children: [
-                { id: 'device', name: 'Device type', path: '/beesee/device' },
-                { id: 'model', name: 'Model type', path: '/beesee/model' },
-                { id: 'issue', name: 'Issue type', path: '/beesee/issue' }, 
-            ],
+            children: [{ id: 'theme', name: 'Theme', path: '/main/theme' }],
         },
-        { id: 'faqs', name: 'Faqs', path: '/beesee/faqs', isUnderLineTop: true, icon: <MessageCircleQuestionMark size={20} /> },
-        { id: 'inquiries', name: 'Inquiries', path: '/beesee/inquiries', icon: <MailQuestionMarkIcon size={20} /> },
-        { id: 'careers', name: 'Careers', path: '/beesee/job-posting', icon: <Briefcase size={20} /> },
-        { id: 'audit-logs', name: 'Audit Logs', path: '/beesee/audit-logs', icon: <Logs size={20} /> },
     ];
 
     const toggleMenu = (id: string) => {
@@ -69,7 +84,6 @@ const SidebarTechnician: React.FC<SidebarProps> = ({ setShowSidebar }) => {
     };
 
     const toggleCollapse = () => {
-        // Only allow collapse on desktop
         if (window.innerWidth >= 768) {
             setIsCollapsed(!isCollapsed);
             if (!isCollapsed) setOpenMenus({});
@@ -83,52 +97,31 @@ const SidebarTechnician: React.FC<SidebarProps> = ({ setShowSidebar }) => {
         }
     };
 
-    // Filter menu based on permissions
+    const handleLogout = () => {
+        logout();
+        setShowLogoutButton(false);
+        closeMobileSidebar();
+    };
+
+    const isActivePath = (path?: string) =>
+        !!path &&
+        (location.pathname === path || location.pathname.startsWith(`${path}/`));
+
     useEffect(() => {
-        if (!userInfo) return;
+        const activeMenuState: Record<string, boolean> = {};
 
-        const filteredMenu = sidebarLayout
-            .filter((item) => {
-                // if (item.id === 'dashboard') return true;
-                if (!userInfo.permissions) return false;
-                if (item.children) {
-                    return item.children.some((child) => userInfo.permissions.some((p) => p.parent_id === item.id && p.children_id === child.id));
-                } else {
-                    return userInfo.permissions.some((p) => p.parent_id === item.id && p.children_id === '');
+        sidebarLayout.forEach((item) => {
+            if (item.children) {
+                const activeChild = item.children.some((child) => isActivePath(child.path));
+                if (activeChild) {
+                    activeMenuState[item.id] = true;
                 }
-            })
-            .map((item) => {
-                if (item.children) {
-                    const filteredChildren = item.children.filter((child) => userInfo.permissions.some((p) => p.parent_id === item.id && p.children_id === child.id));
-                    if (filteredChildren.length > 0) {
-                        return { ...item, children: filteredChildren };
-                    } else {
-                        // If no children permissions, but parent permission exists, show as parent without children
-                        const { children, ...itemWithoutChildren } = item;
-                        return itemWithoutChildren;
-                    }
-                }
-                return item;
-            });
+            }
+        });
 
-        setMenuItems(filteredMenu);
-    }, [userInfo]);
+        setOpenMenus((prev) => ({ ...prev, ...activeMenuState }));
+    }, [location.pathname]);
 
-    // Automatically open menus if a child path is active
-    useEffect(() => {
-        if (!isCollapsed) {
-            menuItems.forEach((item) => {
-                if (item.children) {
-                    const hasActiveChild = item.children.some((child) => location.pathname.startsWith(child.path));
-                    if (hasActiveChild) {
-                        setOpenMenus((prev) => ({ ...prev, [item.id]: true }));
-                    }
-                }
-            });
-        }
-    }, [location.pathname, menuItems, isCollapsed]);
-
-    // Reset collapse state on mobile
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth < 768) {
@@ -136,157 +129,171 @@ const SidebarTechnician: React.FC<SidebarProps> = ({ setShowSidebar }) => {
             }
         };
 
-        handleResize(); // Run on mount
+        handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, [setIsCollapsed]);
 
     return (
-        <div className={`p-4 min-h-screen transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-full min-w-64'}`} style={{ backgroundColor: '#000000' }}>
-            {/* Toggle Button - Desktop / Close Button - Mobile */}
-            <div className="mb-6 flex justify-between items-center md:justify-end">
-                {/* App Logo/Title - Hidden on mobile, shown on desktop when expanded */}
-                {!isCollapsed && <div className="hidden md:flex items-center gap-2 ml-2"></div>}
+        <div
+            className="flex min-h-screen flex-col justify-between border-r border-gray-800"
+            style={{ backgroundColor: dummyTheme.backgroundColor, color: dummyTheme.textColor }}
+        >
+            <div className="p-4">
+                <div className="mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div>
+                            <h2 className="text-lg font-bold" style={{ color: dummyTheme.textColor }}>
+                                Menu
+                            </h2>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={toggleCollapse}
+                        className="hidden h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/5 text-white hover:bg-white/10 md:inline-flex"
+                        aria-label="Toggle sidebar collapse"
+                    >
+                        <ChevronLeft
+                            size={18}
+                            className={`transition-transform ${isCollapsed ? 'rotate-180' : ''}`}
+                        />
+                    </button>
+                </div>
 
-                {/* Close button - Mobile only */}
-                <button
-                    onClick={closeMobileSidebar}
-                    className="md:hidden p-2.5 rounded-xl text-[#D4AF37] transition-all duration-300 hover:scale-110 active:scale-95 shadow-lg hover:shadow-yellow-500/50 ml-auto"
-                    title="Close sidebar"
-                    aria-label="Close navigation menu"
-                >
-                    <X size={26} />
-                </button>
+                
+                <div className='flex items-center justify-center w-full'>
+                    <img
+                        src={dummyTheme.image_url}
+                        alt="Logo"
+                        className="h-20 w-20 rounded-full"
+                    />
+                </div>
 
-                {/* Collapse/Expand button - Desktop only */}
-                <button
-                    onClick={toggleCollapse}
-                    className="hidden md:block p-2.5 rounded-xl text-[#D4AF37] transition-all duration-300 hover:scale-110 active:scale-95 shadow-lg hover:shadow-yellow-500/50"
-                    title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                    aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                >
-                    {/* {isCollapsed ? <ChevronRight size={26} /> : <ChevronLeft size={26} />} */}
-                    {isCollapsed ? <Menu size={26} /> : <Menu size={26} />}
-                </button>
-            </div>
+                <ul className="space-y-2">
+                    {sidebarLayout.map((item) => {
+                        const itemIsActive =
+                            item.path ? isActivePath(item.path) :
+                            item.children ? item.children.some((child) => isActivePath(child.path)) : false;
+                        const menuOpen = !!openMenus[item.id];
 
-            <ul className="space-y-2">
-                {menuItems.map((item) => {
-                    const isActive = item.path && (location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
-                    const hasActiveChild = item.children?.some((child) => location.pathname.startsWith(child.path));
-
-                    const borderTopClass = item.isUnderLineTop ? 'border-t pt-2 mt-4 border-yellow-500/30' : '';
-
-                    return (
-                        <li key={item.id} className={borderTopClass}>
-                            {item.children ? (
-                                <div className="relative group">
-                                    <button
-                                        onClick={() => toggleMenu(item.id)}
-                                        style={{
-                                            background: hasActiveChild ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' : openMenus[item.id] ? 'rgba(31, 41, 55, 0.6)' : 'transparent',
-                                            color: hasActiveChild ? '#ffffff' : openMenus[item.id] ? '#ffffff' : '',
-                                        }}
-                                        className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} gap-3 px-4 py-3.5 w-full rounded-xl transition-all duration-300 ease-out backdrop-blur-sm border border-transparent ${
-                                            hasActiveChild
-                                                ? 'shadow-xl shadow-yellow-500/40 scale-[1.02]'
-                                                : openMenus[item.id]
-                                                  ? 'border-yellow-500/20 hover:border-yellow-500/40'
-                                                  : 'text-gray-400 hover:bg-gray-900/60 hover:text-white hover:border-yellow-500/20 hover:scale-[1.02] hover:translate-x-1'
-                                        }`}
-                                        title={isCollapsed ? item.name : ''}
-                                    >
-                                        <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'} transition-all duration-300`}>
-                                            <span
-                                                style={{ color: hasActiveChild ? '#ffffff' : openMenus[item.id] ? '#fbbf24' : '' }}
-                                                className={`transition-all duration-300 ${!hasActiveChild && !openMenus[item.id] ? 'text-yellow-500 group-hover:text-yellow-400' : ''}`}
-                                            >
-                                                {item.icon}
+                        return (
+                            <li key={item.id}>
+                                {item.children ? (
+                                    <div>
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleMenu(item.id)}
+                                            className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left transition"
+                                            style={
+                                                itemIsActive || menuOpen
+                                                    ? {
+                                                          backgroundColor: dummyTheme.activeColor,
+                                                          color: dummyTheme.textColor,
+                                                      }
+                                                    : { color: dummyTheme.textColor }
+                                            }
+                                        >
+                                            <span className="flex items-center gap-3">
+                                                <span style={{ color: dummyTheme.icon }}>{item.icon}</span>
+                                                <span className="font-medium">{item.name}</span>
                                             </span>
-                                            {!isCollapsed && <span className="font-semibold tracking-wide">{item.name}</span>}
-                                        </div>
-                                        {!isCollapsed && (
                                             <ChevronDown
                                                 size={18}
-                                                style={{ color: hasActiveChild ? '#ffffff' : openMenus[item.id] ? '#fbbf24' : '' }}
-                                                className={`transition-all duration-300 ${openMenus[item.id] ? 'rotate-180' : !hasActiveChild ? 'text-gray-500 group-hover:text-yellow-400' : ''}`}
+                                                className={`transition-transform ${menuOpen ? 'rotate-180' : ''}`}
                                             />
-                                        )}
-                                    </button>
+                                        </button>
 
-                                    {isCollapsed && (
-                                        <div className="absolute left-full ml-3 top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-4 py-2.5 rounded-lg text-sm whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-2xl border border-yellow-500/20">
-                                            {item.name}
-                                            <div className="absolute right-full top-1/2 -translate-y-1/2 border-[6px] border-transparent border-r-gray-800"></div>
-                                        </div>
-                                    )}
-
-                                    {/* Dropdown */}
-                                    {!isCollapsed && (
-                                        <div className={`overflow-hidden transition-all duration-300 ${openMenus[item.id] ? 'max-h-96 mt-2' : 'max-h-0'}`}>
-                                            <ul className="ml-4 space-y-1.5 pl-4 border-l-2 border-yellow-500/20">
+                                        <div
+                                            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                                menuOpen ? 'max-h-96 mt-2' : 'max-h-0'
+                                            }`}
+                                        >
+                                            <ul className="space-y-1 pl-10">
                                                 {item.children.map((child) => {
-                                                    const childActive = location.pathname.startsWith(child.path);
+                                                    const childIsActive = isActivePath(child.path);
                                                     return (
                                                         <li key={child.id}>
                                                             <NavLink
                                                                 to={child.path}
-                                                                style={{
-                                                                    background: childActive ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' : 'transparent',
-                                                                    color: childActive ? '#ffffff' : '',
-                                                                }}
-                                                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all duration-300 ease-out border border-transparent ${
-                                                                    childActive
-                                                                        ? 'shadow-lg shadow-yellow-500/30 scale-[1.02]'
-                                                                        : 'text-gray-400 hover:bg-gray-900/60 hover:text-white hover:border-yellow-500/20 hover:scale-[1.02] hover:translate-x-1'
-                                                                }`}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    closeMobileSidebar();
-                                                                }}
+                                                                onClick={closeMobileSidebar}
+                                                                className="block rounded-lg px-3 py-2 text-sm font-medium transition"
+                                                                style={
+                                                                    childIsActive
+                                                                        ? {
+                                                                              backgroundColor: dummyTheme.activeColor,
+                                                                              color: dummyTheme.textColor,
+                                                                          }
+                                                                        : { color: dummyTheme.textColor }
+                                                                }
                                                             >
-                                                                <span
-                                                                    style={{ color: childActive ? '#ffffff' : '' }}
-                                                                    className={`transition-all duration-300 ${!childActive ? 'text-yellow-500 hover:text-yellow-400' : ''}`}
-                                                                >
-                                                                    {child.icon}
-                                                                </span>
-                                                                <span className="font-semibold tracking-wide">{child.name}</span>
+                                                                {child.name}
                                                             </NavLink>
                                                         </li>
                                                     );
                                                 })}
                                             </ul>
                                         </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <NavLink
-                                    to={item.path || '#'}
-                                    style={{
-                                        background: isActive ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' : 'transparent',
-                                        color: isActive ? '#ffffff' : '',
-                                    }}
-                                    className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-4 py-3.5 rounded-xl transition-all duration-300 ease-out backdrop-blur-sm border border-transparent ${
-                                        isActive
-                                            ? 'shadow-xl shadow-yellow-500/40 scale-[1.02]'
-                                            : 'text-gray-400 hover:bg-gray-900/60 hover:text-white hover:border-yellow-500/20 hover:scale-[1.02] hover:translate-x-1'
-                                    }`}
-                                    onClick={closeMobileSidebar}
-                                    title={isCollapsed ? item.name : ''}
-                                >
-                                    <span style={{ color: isActive ? '#ffffff' : '' }} className={`transition-all duration-300 ${!isActive ? 'text-yellow-500 hover:text-yellow-400' : ''}`}>
-                                        {item.icon}
-                                    </span>
-                                    {!isCollapsed && <span className="font-semibold tracking-wide">{item.name}</span>}
-                                </NavLink>
-                            )}
-                        </li>
-                    );
-                })}
-            </ul>
+                                    </div>
+                                ) : (
+                                    <NavLink
+                                        to={item.path ?? '#'}
+                                        onClick={closeMobileSidebar}
+                                        className="flex items-center gap-3 rounded-xl px-3 py-3 transition"
+                                        style={
+                                            itemIsActive
+                                                ? {
+                                                      backgroundColor: dummyTheme.activeColor,
+                                                      color: dummyTheme.textColor,
+                                                  }
+                                                : { color: dummyTheme.textColor }
+                                        }
+                                    >
+                                        <span style={{ color: dummyTheme.icon }}>{item.icon}</span>
+                                        <span className="font-medium">{item.name}</span>
+                                    </NavLink>
+                                )}
+                            </li>
+                        );
+                    })}
+                </ul>
+            </div>
+
+            <div className="border-t border-black/10 p-4">
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <img
+                            src={currentUser.image_url}
+                            alt="User avatar"
+                            className="h-11 w-11 rounded-full border border-white/10 object-cover"
+                        />
+                        <div>
+                            <p className="font-semibold text-white">{currentUser.name}</p>
+                            <p className="text-sm text-gray-400">{currentUser.position}</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setShowLogoutButton((prev) => !prev)}
+                        className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-gray-200 hover:bg-white/10"
+                        aria-label="Open user actions"
+                    >
+                        <MoreVertical size={18} />
+                    </button>
+                </div>
+
+                {showLogoutButton && (
+                    <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="mt-3 w-full rounded-xl bg-red-500 px-3 py-2 text-left text-sm font-semibold text-white hover:bg-red-600"
+                    >
+                        Logout
+                    </button>
+                )}
+            </div>
         </div>
     );
 };
 
-export default SidebarTechnician;
+export default Sidebar;

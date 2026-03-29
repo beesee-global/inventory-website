@@ -3,7 +3,7 @@ import CustomTextField from "../../components/Fields/CustomTextField"
 import {  motion } from 'framer-motion' 
 import { Email } from "@mui/icons-material"
 import { useNavigate } from "react-router-dom"
-import Snackbar from '../../components/feedback/SnackbarTechnician'
+import Snackbar from '../../components/feedback/SnackbarMain'
 import { Lock } from "lucide-react"; ;
 import { 
   changePassword,

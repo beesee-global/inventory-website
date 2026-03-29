@@ -9,7 +9,7 @@ interface SnackbarProps {
     onClose?: () => void;
 }
 
-const SnackbarTechnician: React.FC <SnackbarProps> = ({
+const SnackbarMain: React.FC <SnackbarProps> = ({
     open,
     type,
     message, 
@@ -72,4 +72,4 @@ const SnackbarTechnician: React.FC <SnackbarProps> = ({
     )
 }
 
-export default SnackbarTechnician;
+export default SnackbarMain;

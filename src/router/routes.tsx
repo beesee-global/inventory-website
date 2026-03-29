@@ -11,7 +11,12 @@ const ForgetPassword = lazy(() => import ("../pages/HomePagesPage/ForgetPassword
 
 /* MainLayout */
 const MainLayout = lazy(() => import("../../src/layout/MainLayout"));
+import CategoryForm from '../pages/MainLayout/Categories/CategoryForm';
 import Categories from '../pages/MainLayout/Categories/Categories';
+import Products from '../pages/MainLayout/Products/Products';
+import ProductsForm from '../pages/MainLayout/Products/ProductsForm';
+import Supplier from '../pages/MainLayout/Suppliers/Supplier';
+import SupplierForm from '../pages/MainLayout/Suppliers/SupplierForm';
 
 const routes = [
     {
@@ -44,11 +49,31 @@ const routes = [
         children: [
             {
                 index: true,
-                element: <Navigate to="categories" replace />,
+                element: <Navigate to="category" replace />,
             },
             {
-                path: 'categories',
+                path: 'category',
                 element: <Categories />
+            },
+            {
+                path: 'category/form/:categoryId?',
+                element: <CategoryForm />
+            },
+            {
+                path: 'product',
+                element: <Products />
+            },
+            {
+                path: 'product/form/:productId?',
+                element: <ProductsForm />
+            },
+            {
+                path: 'supplier',
+                element: <Supplier />
+            },
+            {
+                path: 'supplier/form/:supplierId?',
+                element: <SupplierForm />
             }
         ]
     },
@@ -60,6 +85,26 @@ const routes = [
             {
                 path: 'category',
                 element: <Categories />,
+            },
+            {
+                path: 'category/form/:categoryId?',
+                element: <CategoryForm />,
+            },
+            {
+                path: 'product',
+                element: <Products />,
+            },
+            {
+                path: 'product/form/:productId?',
+                element: <ProductsForm />,
+            },
+            {
+                path: 'supplier',
+                element: <Supplier />,
+            },
+            {
+                path: 'supplier/form/:supplierId?',
+                element: <SupplierForm />,
             },
         ],
     },
